@@ -1,6 +1,6 @@
 const Repair = require('../models/repairs.model');
 
-exports.allRepairs = async (req, res) => {
+exports.allRepairs = async (req, res, next) => {
   const repairs = await Repair.findAll({
     where: {
       status: 'pending',
@@ -14,68 +14,46 @@ exports.allRepairs = async (req, res) => {
   });
 };
 
-exports.repairById = async (req, res) => {
-  const { id } = req.params;
+exports.repairById = async (req, res, next) => {
+  const { repair } = req;
 
-  const repair = await Repair.findOne({
-    where: {
-      id,
-      status: 'pending',
-    },
-  });
-
-  if (!repair) {
-    return res.status(404).json({
-      status: 'error',
-      message: 'the repair not found',
-    });
-  }
-
-  res.status(200).json({
+  return res.status(200).json({
     status: 'success',
-    message: 'The query has been done success',
+    message: 'Repair has been found',
     repair,
   });
 };
 
 exports.repairCreate = async (req, res) => {
-  const { date, userId } = req.body;
+  const { date } = req.body;
 
   const repair = await Repair.create({
     date,
-    userId,
+    userId: sessionUser.id,
   });
 
   res.status(201).json({
     status: 'success',
-    message: 'The repair has been created 👌🏼',
+    message: 'The repair has been created',
     repair,
   });
 };
 
 exports.repairUpdate = async (req, res) => {
-  const { id } = req.params;
+  const { name, email } = req.body;
+  const { repair } = req;
 
-  const repair = await Repair.findOne({
+  await repair.update({
     where: {
-      id,
-      status: 'pending',
+      name,
+      email,
+      status: 'completed',
     },
   });
 
-  if (!repair) {
-    return res.status(404).json({
-      status: 'error',
-      message: 'The repair not found',
-    });
-  }
-
-  await repair.update({
-    status: 'completed',
-  });
-
-  res.json({
-    message: 'The repair has been update 👌🏼',
+  return res.status(200).json({
+    status: 'success',
+    message: 'The repair has been updated',
   });
 };
 
@@ -101,6 +79,6 @@ exports.repairDelete = async (req, res) => {
   });
 
   res.json({
-    message: 'The repair has been deleted 👌🏼',
+    message: 'The repair has been deleted',
   });
 };
